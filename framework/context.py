@@ -58,7 +58,7 @@ class ZerolanLiveRobotContext:
 
         if not devices.headless.is_headless():
             from devices.screen.base_screen import Screen
-            self.screen: Screen | None = None
+            self.screen: Screen = Screen()
         else:
             self.screen = None
 
