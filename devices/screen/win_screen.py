@@ -1,5 +1,6 @@
 import platform
-from typing import Tuple
+from pathlib import Path
+from typing import Tuple, Optional
 
 import pyautogui
 import pygetwindow as gw
@@ -9,7 +10,6 @@ from pygetwindow import Win32Window
 
 from common.io.file_sys import fs
 from devices.screen.base_screen import BaseScreen
-from pathlib import Path
 
 
 class WindowsScreen(BaseScreen):
@@ -18,8 +18,10 @@ class WindowsScreen(BaseScreen):
         os_name = platform.system()
         if os_name != "Windows":
             raise NotImplementedError("Only support Windows platform.")
+        assert hasattr(pyautogui, "screenshot")
+        # Note: If you have a problem that the screenshot cannot be found, try updating the `pyautogui` library
 
-    def safe_capture(self, win_title: str = None, k: float = 1.0):
+    def safe_capture(self, win_title: str = None, k: float | None = None) -> Tuple[Optional[Image], Optional[Path]]:
         try:
             if win_title is None:
                 return self.capture_activated_win(k)
@@ -39,11 +41,11 @@ class WindowsScreen(BaseScreen):
             logger.warning("Window capture failed: Unknown error.")
         return None, None
 
-    def capture_activated_win(self, k: float = 1.0) -> Tuple[Image, Path]:
+    def capture_activated_win(self, k: float | None = None) -> Tuple[Image, Path]:
         w = gw.getActiveWindow()
         return self._capture(w, k)
 
-    def capture_with_title(self, win_title: str, k: float = 1.0) -> Tuple[Image, Path]:
+    def capture_with_title(self, win_title: str, k: float | None = None) -> Tuple[Image, Path]:
         # Get the window
         win_list = gw.getWindowsWithTitle(win_title)
         assert len(win_list) != 0, f'Window capture failed: Can not find {win_title}'
@@ -52,15 +54,16 @@ class WindowsScreen(BaseScreen):
         w.activate()
         return self._capture(w, k)
 
-    def _capture(self, w: Win32Window, k: float) -> Tuple[Image, Path]:
-        region = (
-            w.centerx - k * w.width / 2, w.centery - k * w.height / 2, w.centerx + k * w.width / 2,
-            w.centery + k * w.height / 2)
-        region = tuple(int(num * k) for num in region)
+    def _capture(self, w: Win32Window, k: float | None = None) -> Tuple[Image, Path]:
 
-        assert hasattr(pyautogui, "screenshot")
-        # Note: If you have a problem that the screenshot cannot be found, try updating the `pyautogui` library
-        img = pyautogui.screenshot(region=region)  # noqa
+        if k is None:
+            img = pyautogui.screenshot()
+        else:
+            region = (
+                w.centerx - k * w.width / 2, w.centery - k * w.height / 2, w.centerx + k * w.width / 2,
+                w.centery + k * w.height / 2)
+            region = tuple(int(num) if num > 0 else 0 for num in region)
+            img = pyautogui.screenshot(region=region)  # noqa
 
         img_save_path = fs.create_temp_file_descriptor(prefix="screenshot", suffix=".png", type="image")
         img.save(img_save_path)
