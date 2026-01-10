@@ -46,7 +46,7 @@ class SmartKeyboard(ThreadRunnable):
         self._key_listener.stop()
     
     def _on_key_press(self, key):
-        logger.debug(f'Press {key}')
+        # logger.debug(f'Press {key}')
         if key not in self._hotkeys:
             return
         
@@ -58,7 +58,7 @@ class SmartKeyboard(ThreadRunnable):
         emitter.emit(DeviceKeyboardPressEvent(hotkey=self.Key_to_str(key)))
 
     def _on_key_release(self, key):
-        logger.debug(f'Release {key}')
+        # logger.debug(f'Release {key}')
         if key == self._current_hotkey:
             self._toggle_debounce = False
             self._current_hotkey = None
