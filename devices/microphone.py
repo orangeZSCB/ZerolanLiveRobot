@@ -13,7 +13,7 @@ from event.event_emitter import emitter
 
 
 class SmartMicrophone(ThreadRunnable):
-    def __init__(self, vad_mode=3, frame_duration=30):
+    def __init__(self, enable_vad: bool=False, vad_mode=3, frame_duration=30):
         """
         初始化智能麦克风类
         :param vad_mode: Optionally, set its aggressiveness mode, which is an integer between 0 and 3.
@@ -21,6 +21,7 @@ class SmartMicrophone(ThreadRunnable):
         :param frame_duration: A frame must be either 10, 20, or 30 ms in duration.
         """
         super().__init__()
+        self._enable_vad = enable_vad
         assert frame_duration in [10, 20, 30], f"A frame must be either 10, 20, or 30 ms in duration!"
 
         # Audio parameters
@@ -77,17 +78,8 @@ class SmartMicrophone(ThreadRunnable):
 
                 # 锁防止 hotkey 线程强制释放时同时读取
                 with self._recording_lock:
-                    if self._vad.is_speech(data, self._sample_rate):
-                        if not self._is_speaking:
-                            logger.info("Voice detected: Beginning.")
-                            self._is_speaking = True
-                        self._audio_frames.append(data)
-                    else:
-                        if self._is_speaking:
-                            logger.info("Voice detected: Ending.")
-                            self._is_speaking = False
-                            self._emit_event()
-                            self._audio_frames = []
+                    self._vad_record(data)
+
         except Exception as e:
             logger.exception(e)
         finally:
@@ -95,6 +87,24 @@ class SmartMicrophone(ThreadRunnable):
             self._stream.stop_stream()
             self._stream.close()
             self._audio.terminate()
+
+    def _vad_record(self, data: bytes):
+        if self._enable_vad:
+            if self._vad.is_speech(data, self._sample_rate):
+                if not self._is_speaking:
+                    logger.info("Voice detected: Beginning.")
+                    self._is_speaking = True
+                self._audio_frames.append(data)
+            else:
+                if self._is_speaking:
+                    logger.info("Voice detected: Ending.")
+                    self._is_speaking = False
+                    self._emit_event()
+                    self._audio_frames = []
+        else:
+            if not self._is_speaking:
+                self._is_speaking = True
+            self._audio_frames.append(data)
 
     def _emit_event(self):
         if self._audio_frames:
