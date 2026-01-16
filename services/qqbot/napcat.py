@@ -3,20 +3,25 @@ import time
 from ncatbot.core import BotClient, GroupMessageEvent
 from loguru import logger
 from typeguard import typechecked
-from bot import QQMessageEvent, emitter
+
+from event.event_data import QQMessageEvent
+from event.event_emitter import emitter
 from services.qqbot.config import QQBotServiceConfig
 
 
 class QQBotService:
     def __init__(self, config: QQBotServiceConfig):
-        self._bot = BotClient(max_workers=4)
+        self._bot = BotClient()
         self._api = self._bot.run_backend(bt_uin=config.qq_num, ws_uri=config.ws_uri,
-                                          ws_token=config.ws_token, debug=False)
+                                          ws_token=config.ws_token, debug=False, enable_webui_interaction=False)
         self._root_user = config.root
         logger.info("QQ bot started with Napcat backend.")
         self._last_sent_time = time.time()
 
-        @self._bot.on_group_message
+        self._init()
+
+    def _init(self):
+        @self._bot.on_group_message()
         async def echo_cmd(event: GroupMessageEvent):
             text = "".join(seg.text for seg in event.message.filter_text())
             if "echo" in text:
@@ -24,7 +29,7 @@ class QQBotService:
                     await event.reply(text[4:])
                     self.set_timer()
 
-        @self._bot.on_group_message
+        @self._bot.on_group_message()
         async def emit_plain_text_msg(event: GroupMessageEvent):
             text = "".join(seg.text for seg in event.message.filter_text())
             logger.debug(f"Received QQ message: {text}")
