@@ -45,7 +45,7 @@ class ZerolanLiveRobot(BaseBot):
         self.tts_thread_pool = ThreadPoolExecutor(max_workers=1)
         self.enable_exp_memory = False
         self.enable_sentiment_analysis = False
-        self.enable_split_by_punc = False
+        self.enable_split_by_punc = True
         self.init()
         logger.info("🤖 Zerolan Live Robot: Initialized services successfully.")
 
@@ -466,5 +466,6 @@ class ZerolanLiveRobot(BaseBot):
                                             transcript=event.transcript, bot_name=self.bot_name)
                 logger.debug("Remote speaker enqueue speech data")
         else:
-            self.speaker.playsound(audio_path, block=True)
+            # `playsound(audio_path, block=True)` will block the thread, use `enqueue_sound(audio_path)` instead
+            self.speaker.enqueue_sound(audio_path)
             logger.debug("Local speaker enqueue speech data")
