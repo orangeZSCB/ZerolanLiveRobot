@@ -17,6 +17,14 @@ class SystemConfig(BaseModel):
                                    description="Your microphone is set to be off when the program starts. One tap on this hotkey will change its status between on and off.\n" \
                                                "You can pick your own hotkey on Key names like: {} ...".format(
                                        try_get_pynput_key_enum_str()))
+    enable_clause_split: bool = Field(default=True,
+                                      description='If `True`, splits LLM responses into smaller clauses before sending to TTS service. '
+                                                  'This enables faster audio generation and reduced latency for real-time applications. \n'
+                                                  'Set to `False` to send full sentences as a single unit for more natural speech flow at the cost of longer wait times.')
+    enable_sentiment_analysis: bool = Field(default=False, description='Automatically analyzes sentiment to select appropriate TTS prompts. '
+                                                                      'This also increases token consumption and adds slight latency due to extra processing.')
+    enable_intelligent_memory: bool = Field(default=False,
+                                            description='🧪 EXPERIMENTAL: Automatically scores and filters conversation history entries based on sentiment, relevance, and safety.')
 
 
 class ZerolanLiveRobotConfig(BaseModel):

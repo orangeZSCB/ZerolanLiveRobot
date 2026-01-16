@@ -45,9 +45,9 @@ class ZerolanLiveRobot(BaseBot):
         self.tts_prompt_manager.set_lang(self.cur_lang)
         self._timer_flag = True
         self.tts_thread_pool = ThreadPoolExecutor(max_workers=1)
-        self.enable_exp_memory = False
-        self.enable_sentiment_analysis = False
-        self.enable_split_by_punc = True
+        self.enable_exp_memory = _config.system.enable_intelligent_memory
+        self.enable_sentiment_analysis = _config.system.enable_sentiment_analysis
+        self.enable_split_by_punc = _config.system.enable_clause_split
         self.subtitles_queue = Queue()
         self.init()
         logger.info("🤖 Zerolan Live Robot: Initialized services successfully.")
@@ -421,6 +421,7 @@ class ZerolanLiveRobot(BaseBot):
         is_filtered = self.filter.filter(prediction.response)
 
         if is_filtered:
+            logger.warning(f"LLM (Filtered): {prediction.response}")
             return None
 
         # Remove \n start
