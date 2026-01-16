@@ -31,6 +31,7 @@ def enum_to_markdown(enum: Type[Enum]) -> str:
         candidates = _enum_members_to_plain_text_with_comma(enum)
         return f"{candidates} are supported."
 
+
 @typechecked
 def enum_to_markdown_zh(enum: Type[Enum]) -> str:
     num_of_enum = len(enum)
@@ -39,3 +40,14 @@ def enum_to_markdown_zh(enum: Type[Enum]) -> str:
     else:
         candidates = _enum_members_to_plain_text_with_comma(enum)
         return f"支持 {candidates}。"
+
+
+def try_get_pynput_key_enum_str():
+    try:
+        from pynput.keyboard import Key
+
+        return ', '.join(list(Key.__members__.keys())[:40])
+    except ImportError:
+        from loguru import logger
+        logger.warning(f'Pynput not installed, please try "pip install pynput" to solve this problem.')
+        return '<Unknown Key: Because `pynput` is not installed>'

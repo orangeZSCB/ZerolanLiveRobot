@@ -1,12 +1,9 @@
 from pydantic import BaseModel, Field
 
 from character.config import CharacterConfig
+from common.utils.enum_util import try_get_pynput_key_enum_str
 from pipeline.base.config import PipelineConfig
 from services.config import ServiceConfig
-try:
-    from pynput.keyboard import Key
-except:
-    raise ImportError(f'Pynput not installed, please try "pip install pynput" to solve this problem.')
 
 
 class SystemConfig(BaseModel):
@@ -15,10 +12,11 @@ class SystemConfig(BaseModel):
                                                         "You can set it `True` to enable your microphone")
     microphone_vad_mode: int = Field(default=3,
                                      description="Optionally, set its aggressiveness mode, which is an integer between 0 and 3. " \
-                                     "0 is the least aggressive about filtering out non-speech, 3 is the most aggressive.")
+                                                 "0 is the least aggressive about filtering out non-speech, 3 is the most aggressive.")
     microphone_hotkey: str = Field(default='f8',
                                    description="Your microphone is set to be off when the program starts. One tap on this hotkey will change its status between on and off.\n" \
-                                   "You can pick your own hotkey on Key names like: {} ...".format(', '.join(list(Key.__members__.keys())[:40])))
+                                               "You can pick your own hotkey on Key names like: {} ...".format(
+                                       try_get_pynput_key_enum_str()))
 
 
 class ZerolanLiveRobotConfig(BaseModel):
