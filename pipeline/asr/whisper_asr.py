@@ -1,6 +1,5 @@
 import os.path
 from typing import Generator
-from io import BytesIO
 
 import requests
 from typeguard import typechecked
