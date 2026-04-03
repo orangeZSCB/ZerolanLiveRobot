@@ -25,7 +25,6 @@ from common.io.file_type import AudioFileType
 from common.utils import audio_util, math_util
 from common.utils.img_util import is_image_uniform
 from common.utils.str_util import split_by_punc, is_blank
-from common.utils.sound_effect_util import parse_sound_effect_markers, get_sound_effect_path, TextSegment
 from event.event_data import DeviceMicrophoneVADEvent, DeviceKeyboardPressEvent, DeviceScreenCapturedEvent, \
     PipelineOutputLLMEvent, \
     PipelineImgCapEvent, \
@@ -397,22 +396,31 @@ class ZerolanLiveRobot(BaseBot):
             if self.playground:
                 self.playground.add_history(role="assistant", text=text, username=self.bot_name)
 
+            def process_tts(text: str):
+                # Process text with TTS (skip empty text)
+                if self.enable_split_by_punc:
+                    transcripts = split_by_punc(text, self.cur_lang)
+                    # Note that transcripts may be [] because we can not apply split in some cases.
+                    if len(transcripts) > 0:
+                        for idx, transcript in enumerate(transcripts):
+                            self._tts_without_block(tts_prompt, transcript)
+                else:
+                    self._tts_without_block(tts_prompt, text)
+
+            def process_sound_effect_and_tts(text: str):
+                segments = self.sound_effect.parse_sound_effect_markers(text)
+                for segment in segments:
+                    if segment.is_sound_effect:
+                        # Play sound effect
+                        self._play_sound_effect(segment.sound_effect_id)
+                    elif segment.text and segment.text.strip():
+                        process_tts(segment.text)
+
             # Parse sound effect markers and process text segments
-            segments = parse_sound_effect_markers(text)
-            for segment in segments:
-                if segment.is_sound_effect:
-                    # Play sound effect
-                    self._play_sound_effect(segment.sound_effect_id)
-                elif segment.text and segment.text.strip():
-                    # Process text with TTS (skip empty text)
-                    if self.enable_split_by_punc:
-                        transcripts = split_by_punc(segment.text, self.cur_lang)
-                        # Note that transcripts may be [] because we can not apply split in some cases.
-                        if len(transcripts) > 0:
-                            for idx, transcript in enumerate(transcripts):
-                                self._tts_without_block(tts_prompt, transcript)
-                    else:
-                        self._tts_without_block(tts_prompt, segment.text)
+            if self.sound_effect is not None:
+                process_sound_effect_and_tts(text)
+            else:
+                process_tts(text)
 
         @emitter.on(EventKeyRegistry.System.CONFIG_FILE_MODIFIED)
         def on_config_modified(_: ConfigFileModifiedEvent):
@@ -465,7 +473,9 @@ class ZerolanLiveRobot(BaseBot):
     def _play_sound_effect(self, sound_effect_id: str):
         """Play a sound effect."""
         def wrapper():
-            sound_path = get_sound_effect_path(sound_effect_id)
+            if self.sound_effect is None:
+                return
+            sound_path = self.sound_effect.get_sound_effect_path(sound_effect_id)
             if sound_path and sound_path.exists():
                 logger.info(f"Playing sound effect: {sound_effect_id}")
                 self.speaker.enqueue_sound(sound_path)
