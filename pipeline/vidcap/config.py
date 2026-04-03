@@ -34,4 +34,4 @@ class VidCapPipelineConfig(AbstractPipelineConfig):
                                     description="The URL for streaming video captioning prediction requests.")
     openai_format_config: OpenAIFormatConfig | None = Field(default=None,
                                                            description="Configuration for OpenAI-compatible format. "
-                                                                     "Required when model_id is 'Other-OpenAI-Format'.")
+                                                                     "Required when `model_id` is 'Other-OpenAI-Format'.")
