@@ -11,7 +11,7 @@ class ImgCapSyncPipeline(AbstractImagePipeline):
     def __init__(self, config: ImgCapPipelineConfig):
         super().__init__(config)
         # Check if using OpenAI format
-        if config.model_id == ImgCapModelIdEnum.Other_OpenAI_Format and config.openai_format_config is not None:
+        if config.model_id == ImgCapModelIdEnum.OtherOpenAIFormat and config.openai_format_config is not None:
             openai_pipeline = OpenAIImgCapPipeline(config.openai_format_config)
             self.predict = openai_pipeline.predict
             self.stream_predict = openai_pipeline.stream_predict

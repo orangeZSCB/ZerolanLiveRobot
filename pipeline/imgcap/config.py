@@ -11,7 +11,7 @@ from pipeline.base.base_sync import AbstractPipelineConfig
 
 class ImgCapModelIdEnum(BaseEnum):
     Blip = 'Salesforce/blip-image-captioning-large'
-    Other_OpenAI_Format = 'Other-OpenAI-Format'
+    OtherOpenAIFormat = 'Other-OpenAI-Format'
 
 
 class OpenAIFormatConfig(BaseModel):
@@ -33,4 +33,4 @@ class ImgCapPipelineConfig(AbstractPipelineConfig):
                                     description="The URL for streaming image captioning prediction requests.")
     openai_format_config: OpenAIFormatConfig | None = Field(default=None,
                                                            description="Configuration for OpenAI-compatible format. "
-                                                                     "Required when model_id is 'Other-OpenAI-Format'.")
+                                                                     "Required when `model_id` is 'Other-OpenAI-Format'.")
