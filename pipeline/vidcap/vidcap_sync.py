@@ -17,7 +17,7 @@ class VidCapSyncPipeline(CommonModelPipeline):
         """
         super().__init__(config)
         # Check if using OpenAI format
-        if config.model_id == VidCapModelIdEnum.Other_OpenAI_Format and config.openai_format_config is not None:
+        if config.model_id == VidCapModelIdEnum.OtherOpenAIFormat and config.openai_format_config is not None:
             openai_pipeline = OpenAIVidCapPipeline(config.openai_format_config)
             self.predict = openai_pipeline.predict
             self.stream_predict = openai_pipeline.stream_predict

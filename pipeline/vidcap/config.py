@@ -11,7 +11,7 @@ from pipeline.base.base_sync import AbstractPipelineConfig
 
 class VidCapModelIdEnum(BaseEnum):
     Hitea = 'iic/multi-modal_hitea_video-captioning_base_en'
-    Other_OpenAI_Format = 'Other-OpenAI-Format'
+    OtherOpenAIFormat = 'Other-OpenAI-Format'
 
 
 class OpenAIFormatConfig(BaseModel):
