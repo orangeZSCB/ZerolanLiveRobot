@@ -13,7 +13,7 @@ class OCRSyncPipeline(AbstractImagePipeline):
     def __init__(self, config: OCRPipelineConfig):
         super().__init__(config)
         # Check if using OpenAI format
-        if config.model_id == OCRModelIdEnum.Other_OpenAI_Format and config.openai_format_config is not None:
+        if config.model_id == OCRModelIdEnum.OtherOpenAIFormat and config.openai_format_config is not None:
             openai_pipeline = OpenAIOCRPipeline(config.openai_format_config)
             self.predict = openai_pipeline.predict
             self.stream_predict = openai_pipeline.stream_predict
